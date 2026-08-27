@@ -8,7 +8,7 @@
 </head>
 <body class="bg-black text-white min-h-screen p-6 selection:bg-white selection:text-black">
     <div class="max-w-4xl mx-auto space-y-8">
-        <!-- الهيدر مع زر البيت -->
+        <!-- الهيدر مع زر البيت والمحفوظات -->
         <header class="flex justify-between items-center border-b border-zinc-800 pb-4">
             <div class="flex items-center gap-3">
                 <a href="index.html" class="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 p-2 rounded-xl text-zinc-300 transition" title="الرئيسية">
@@ -39,14 +39,14 @@
             </div>
         </div>
 
-        <!-- منطقة النتائج -->
+        <!-- منطقة النتائج (تحتوي على زر الحفظ والنسخ) -->
         <div id="resultsArea" class="hidden space-y-6">
             <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-3">
-                <div class="flex justify-between items-center">
+                <div class="flex justify-between items-center flex-wrap gap-2">
                     <h3 class="font-semibold text-white text-sm">كود Luau (Client & Server)</h3>
                     <div class="flex gap-2">
                         <button onclick="saveCurrentScript()" class="text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 hover:bg-emerald-900 px-3 py-1.5 rounded-lg transition">💾 حفظ السكربت</button>
-                        <button onclick="copyCode()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3 py-1.5 rounded-lg transition text-zinc-300">نسخ الكود</button>
+                        <button onclick="copyCode()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3 py-1.5 rounded-lg transition text-zinc-300">📋 نسخ الكود</button>
                     </div>
                 </div>
                 <pre id="codeOutput" class="bg-black border border-zinc-900 p-4 rounded-xl text-xs overflow-x-auto text-zinc-200 font-mono leading-relaxed"></pre>
@@ -81,7 +81,7 @@
         ];
 
         function generateRandomIdea() {
-            // حفظ الحالة الحالية قبل التغيير لتمكين زر الرجوع
+            // حفظ الحالة الحالية لتمكين زر الرجوع
             previousState = {
                 idea: document.getElementById('ideaInput').value,
                 code: document.getElementById('codeOutput').textContent,
@@ -97,7 +97,6 @@
             document.getElementById('remotesOutput').innerHTML = selected.remotes;
             document.getElementById('resultsArea').classList.remove('hidden');
             
-            // إظهار زر الرجوع
             document.getElementById('backBtn').classList.remove('hidden');
         }
 
