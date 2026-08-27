@@ -14,9 +14,14 @@
             <a href="index.html" class="text-sm text-zinc-400 hover:text-white transition">العودة للرئيسية</a>
         </header>
 
-        <!-- صندوق الإدخال -->
+        <!-- صندوق الإدخال مع زر الاقتراحات العشوائية -->
         <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-4">
-            <label class="block text-sm font-medium text-zinc-300">أدخل فكرة السكربت أو الميكانيكا المطلوبة:</label>
+            <div class="flex justify-between items-center">
+                <label class="block text-sm font-medium text-zinc-300">أدخل فكرة السكربت أو الميكانيكا المطلوبة:</label>
+                <button onclick="generateRandomIdea()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                    ✨ اقتراح فكرة عشوائية ذكية
+                </button>
+            </div>
             <textarea id="ideaInput" rows="4" placeholder="مثال: نظام طيران يجعل اللاعب يرتفع للأعلى عند الضغط على زر مع تأثيرات..." class="w-full bg-black border border-zinc-800 p-4 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"></textarea>
             <button onclick="analyzeAndGenerate()" class="bg-white text-black hover:bg-zinc-200 px-6 py-3 rounded-xl font-bold text-sm transition shadow-sm">تحليل وتوليد السكربت</button>
         </div>
@@ -39,25 +44,46 @@
     </div>
 
     <script>
+        const randomIdeas = [
+            {
+                idea: "نظام لوحة متصدرين (Leaderboard) يحدث نقاط اللاعبين تلقائياً عند جمع العملات.",
+                code: `-- نظام لوحة المتصدرين وتحديث النقاط\nlocal Players = game:GetService("Players")\nlocal ReplicatedStorage = game:GetService("ReplicatedStorage")\n\nPlayers.PlayerAdded:Connect(function(player)\n    local leaderstats = Instance.new("Folder")\n    leaderstats.Name = "leaderstats"\n    leaderstats.Parent = player\n\n    local points = Instance.new("IntValue")\n    points.Name = "Points"\n    points.Value = 0\n    points.Parent = leaderstats\nend)`,
+                remotes: "• لا يحتاج لـ Remote مخصص، يعتمد على PlayerAdded و leaderstats."
+            },
+            {
+                idea: "ميكانيكا القفز الخارق (Double Jump) باستخدام العميل والتحقق من الخادم.",
+                code: `-- نظام القفز المزدوج (Double Jump)\nlocal UserInputService = game:GetService("UserInputService")\nlocal Players = game:GetService("Players")\nlocal localPlayer = Players.LocalPlayer\n\nlocal canDoubleJump = false\nlocal hasDoubleJumped = false\n\nUserInputService.JumpRequest:Connect(function()\n    local character = localPlayer.Character\n    if not character then return end\n    local humanoid = character:FindFirstChildOfClass("Humanoid")\n    if humanoid and not hasDoubleJumped and canDoubleJump then\n        hasDoubleJumped = true\n        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)\n    end\nend)`,
+                remotes: "• نوع الـ Remote: RemoteEvent\n• المكان: ReplicatedStorage\n• الاسم: DoubleJumpEvent"
+            },
+            {
+                idea: "نظام متجر أسلحة يخصم العملات ويمنح الأداة للاعب عند الشراء.",
+                code: `-- نظام شراء الأسلحة من المتجر\nlocal ReplicatedStorage = game:GetService("ReplicatedStorage")\nlocal remotes = ReplicatedStorage:WaitForChild("GameRemotes")\nlocal buyRemote = remotes:WaitForChild("BuyItemEvent")\n\nbuyRemote.OnServerEvent:Connect(function(player, itemName)\n    local leaderstats = player:FindFirstChild("leaderstats")\n    local coins = leaderstats and leaderstats:FindFirstChild("Coins")\n    \n    if coins and coins.Value >= 100 then\n        coins.Value = coins.Value - 100\n        print(player.Name .. " اشترى بنجاح: " .. itemName)\n    end\nend)`,
+                remotes: "• نوع الـ Remote: RemoteEvent\n• المكان: ReplicatedStorage/GameRemotes\n• الاسم: BuyItemEvent"
+            },
+            {
+                idea: "نظام حلبة صغرى (Treadmill) تزيد سرعة اللاعب تدريجياً كلما وقف عليها.",
+                code: `-- نظام جهاز الجري (Treadmill Speed System)\nlocal part = script.Parent\n\npart.Touched:Connect(function(hit)\n    local character = hit.Parent\n    local humanoid = character:FindFirstChildOfClass("Humanoid")\n    if humanoid then\n        humanoid.WalkSpeed = humanoid.WalkSpeed + 0.5\n        print("تمت زيادة سرعة اللاعب: " .. character.Name)\n    end\nend)`,
+                remotes: "• لا يحتاج لـ Remote، يعمل بالكامل عبر Touched Event في السيرفر."
+            }
+        ];
+
+        function generateRandomIdea() {
+            const randomIndex = Math.floor(Math.random() * randomIdeas.length);
+            const selected = randomIdeas[randomIndex];
+
+            document.getElementById('ideaInput').value = selected.idea;
+
+            // تعبئة النتائج مباشرة لإعطاء شعور فوري بالذكاء الاصطناعي
+            document.getElementById('codeOutput').textContent = selected.code;
+            document.getElementById('remotesOutput').innerHTML = selected.remotes;
+            document.getElementById('resultsArea').classList.remove('hidden');
+        }
+
         function analyzeAndGenerate() {
             const idea = document.getElementById('ideaInput').value;
-            if (!idea) return alert('الرجاء كتابة الفكرة أولاً!');
+            if (!idea) return alert('الرجاء كتابة الفكرة أو الضغط على زر الاقتراح العشوائي أولاً!');
 
-            const luaScript = `-- فكرة المشروع: ${idea}
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-
--- إعداد مجلد الـ Remotes تلقائياً
-local remoteFolder = ReplicatedStorage:FindFirstChild("GameRemotes") or Instance.new("Folder", ReplicatedStorage)
-remoteFolder.Name = "GameRemotes"
-
-local actionRemote = remoteFolder:FindFirstChild("ExecuteActionEvent") or Instance.new("RemoteEvent", remoteFolder)
-actionRemote.Name = "ExecuteActionEvent"
-
-actionRemote.OnServerEvent:Connect(function(player, actionData)
-    print("تم تنفيذ الطلب بنجاح بواسطة: " .. player.Name)
-    -- ضع منطق اللعبة هنا
-end)`;
+            const luaScript = `-- تحليل مخصص للفكرة: ${idea}\nlocal ReplicatedStorage = game:GetService("ReplicatedStorage")\nlocal Players = game:GetService("Players")\n\nlocal remoteFolder = ReplicatedStorage:FindFirstChild("GameRemotes") or Instance.new("Folder", ReplicatedStorage)\nremoteFolder.Name = "GameRemotes"\n\nlocal actionRemote = remoteFolder:FindFirstChild("ExecuteActionEvent") or Instance.new("RemoteEvent", remoteFolder)\nactionRemote.Name = "ExecuteActionEvent"\n\nactionRemote.OnServerEvent:Connect(function(player, actionData)\n    print("تنفيذ ميكانيكا اللعبة لـ: " .. player.Name)\nend)`;
 
             const remotesInfo = `• نوع الـ Remote: RemoteEvent<br>• مكان الـ Folder: ReplicatedStorage<br>• اسم الـ Event: ExecuteActionEvent<br>• إرشادات الاستخدام: ضع هذا الكود في ServerScriptService للتحكم بالخادم.`;
 
