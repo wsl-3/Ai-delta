@@ -6,14 +6,25 @@
     <title>منشئ سكربتات روبلوكس الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white min-h-screen flex items-center justify-center p-6 selection:bg-white selection:text-black">
-    <div class="max-w-xl w-full text-center space-y-6 bg-zinc-950 border border-zinc-800 p-8 rounded-3xl">
+<body class="bg-black text-white min-h-screen flex flex-col items-center justify-center p-6 selection:bg-white selection:text-black">
+    <div class="max-w-xl w-full text-center space-y-6 bg-zinc-950 border border-zinc-800 p-8 rounded-3xl shadow-xl">
         <h1 class="text-3xl font-bold tracking-tight">منشئ سكربتات Roblox Luau</h1>
-        <p class="text-zinc-400 text-sm leading-relaxed">أداة مخصصة لتحليل أفكار الألعاب وتحويلها إلى أكواد برمجية وتحديد الـ Remotes المطلوبة بدقة.</p>
+        <p class="text-zinc-400 text-sm leading-relaxed">أداة ذكية لتحليل أفكار الألعاب وتوليد أكواد Luau المخصصة مع إدارة المحفوظات.</p>
         
-        <div>
-            <a href="generator.html" class="inline-block bg-white text-black hover:bg-zinc-200 font-bold px-8 py-3 rounded-xl text-sm transition shadow-sm">ابدأ بتوليد السكربتات</a>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+            <a href="generator.html" class="bg-white text-black hover:bg-zinc-200 font-bold px-6 py-3 rounded-xl text-sm transition shadow-sm">
+                ✨ ابدأ بتوليد السكربتات والأفكار
+            </a>
+            <a href="saved.html" class="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-200 font-bold px-6 py-3 rounded-xl text-sm transition">
+                📂 السكربتات المحفوظة (<span id="savedCount">0</span>)
+            </a>
         </div>
     </div>
+
+    <script>
+        // تحديث عداد المحفوظات بالرئيسية
+        const savedScripts = JSON.parse(localStorage.getItem('robloxSavedScripts') || '[]');
+        document.getElementById('savedCount').textContent = savedScripts.length;
+    </script>
 </body>
 </html>
