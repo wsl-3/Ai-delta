@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lua Script Generator & GitHub Deployer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto space-y-6">
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl font-bold text-blue-400">منشئ سكربتات Lua والربط مع GitHub</h1>
+            <p class="text-slate-400">اطلب الفكرة وسيقوم الذكاء الاصطناعي بكتابة السكربت، تحديد الرموتات، وجهزه للرفع.</p>
+        </header>
+
+        <!-- إعدادات جيت هاب -->
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+            <h2 class="text-lg font-semibold text-blue-300">إعدادات GitHub</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="text" id="ghUser" placeholder="اسم المستخدم (Username)" class="bg-slate-900 border border-slate-700 p-2 rounded text-sm">
+                <input type="text" id="ghRepo" placeholder="اسم المستودع (Repository)" class="bg-slate-900 border border-slate-700 p-2 rounded text-sm">
+                <input type="password" id="ghToken" placeholder="GitHub Personal Access Token" class="bg-slate-900 border border-slate-700 p-2 rounded text-sm">
+            </div>
+        </div>
+
+        <!-- توليد السكربت -->
+        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+            <h2 class="text-lg font-semibold text-blue-300">وصف السكربت المطلوب</h2>
+            <textarea id="promptInput" rows="4" placeholder="مثال: نظام طيران يجعل اللاعب يطفع للأعلى عند الضغط على زر مع تأثيرات صوتية..." class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-sm focus:outline-none focus:border-blue-500"></textarea>
+            <button onclick="generateScript()" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded font-bold text-sm transition">توليد السكربت والـ Remotes</button>
+        </div>
+
+        <!-- النتائج -->
+        <div id="outputSection" class="hidden space-y-4">
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                <h3 class="font-semibold text-emerald-400">1. سكربت الـ Client / Server (Lua)</h3>
+                <pre id="luaOutput" class="bg-slate-950 p-3 rounded text-xs overflow-x-auto text-emerald-300 font-mono"></pre>
+            </div>
+
+            <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                <h3 class="font-semibold text-amber-400">2. متطلبات الـ Remote Events</h3>
+                <div id="remoteOutput" class="text-sm text-slate-300 bg-slate-950 p-3 rounded"></div>
+            </div>
+
+            <button onclick="deployToGitHub()" class="bg-emerald-600 hover:bg-emerald-500 w-full py-3 rounded font-bold text-center transition">رفع الملفات إلى GitHub Pages 🚀</button>
+        </div>
+    </div>
+
+    <script>
+        let generatedFiles = {};
+
+        function generateScript() {
+            const prompt = document.getElementById('promptInput').value;
+            if (!prompt) return alert('الرجاء كتابة وصف السكربت أولاً!');
+
+            // محاكاة استجابة الذكاء الاصطناعي (يمكن ربطه بـ OpenAI API مباشرة هنا)
+            const luaCode = `-- Generated for: ${prompt}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local remoteEvent = ReplicatedStorage:WaitForChild("CustomActionEvent")
+
+remoteEvent.OnServerEvent:Connect(function(player)
+    print("Action executed by: " .. player.Name)
+    -- كود التنفيذ هنا
+end)`;
+
+            const remoteInfo = "تحتاج لإنشاء RemoteEvent واحد باسم `CustomActionEvent` وتضعه داخل `ReplicatedStorage`.";
+
+            generatedFiles = {
+                "script.lua": luaCode,
+                "README.md": `# Project Info\nGenerated from prompt: ${prompt}`
+            };
+
+            document.getElementById('luaOutput').textContent = luaCode;
+            document.getElementById('remoteOutput').textContent = remoteInfo;
+            document.getElementById('outputSection').classList.remove('hidden');
+        }
+
+        async function deployToGitHub() {
+            const user = document.getElementById('ghUser').value;
+            const repo = document.getElementById('ghRepo').value;
+            const token = document.getElementById('ghToken').value;
+
+            if (!user || !repo || !token) return alert('الرجاء تعبئة بيانات GitHub بالكامل!');
+
+            alert('جاري رفع الملفات إلى مستودعك وتفعيل GitHub Pages...');
+            
+            for [filename, content] of Object.entries(generatedFiles)) {
+                const url = `https://api.github.com/repos/${user}/${repo}/contents/${filename}`;
+                const base64Content = btoa(unescape(encodeURIComponent(content)));
+
+                // تحقق مما إذا كان الملف موجوداً لجلب الـ sha لتحديثه
+                let sha = null;
+                const getRes = await fetch(url, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                if (getRes.ok) {
+                    const data = await getRes.json();
+                    sha = data.sha;
+                }
+
+                const bodyData = {
+                    message: `Add ${filename} via Lua Script Generator`,
+                    content: base64Content
+                };
+                if (sha) bodyData.sha = sha;
+
+                const res = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert(`فشل رفع الملف ${filename}: ${err.message}`);
+                    return;
+                }
+            }
+
+            alert(`تم الرفع بنجاح! ستظهر ملفاتك على رابط GitHub Pages الخاص بك:\nhttps://${user}.github.io/${repo}/script.lua`);
+        }
+    </script>
+</body>
+</html>
