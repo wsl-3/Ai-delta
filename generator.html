@@ -6,28 +6,34 @@
     <title>محلل ومولد سكربتات روبلوكس</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
-    <div class="max-w-4xl mx-auto space-y-6">
-        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
-            <h1 class="text-2xl font-bold text-blue-400">محلل أفكار Roblox AI</h1>
-            <a href="index.html" class="text-sm text-slate-400 hover:text-white">العودة للرئيسية</a>
+<body class="bg-black text-white min-h-screen p-6 selection:bg-white selection:text-black">
+    <div class="max-w-4xl mx-auto space-y-8">
+        <!-- الهيدر -->
+        <header class="flex justify-between items-center border-b border-zinc-800 pb-4">
+            <h1 class="text-xl font-bold tracking-wide">محلل أفكار Roblox AI</h1>
+            <a href="index.html" class="text-sm text-zinc-400 hover:text-white transition">العودة للرئيسية</a>
         </header>
 
-        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 space-y-4">
-            <label class="block text-sm font-semibold text-slate-300">أدخل فكرة السكربت أو الميكانيكا المطلوبة:</label>
-            <textarea id="ideaInput" rows="4" placeholder="مثال: نظام متجر يفتح واجهة GUI للاعبين وعند شراء سيف يخصم من رصيده ويضيفه للحقيبة..." class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-sm focus:outline-none focus:border-blue-500"></textarea>
-            <button onclick="analyzeAndGenerate()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded font-bold text-sm transition shadow-lg shadow-blue-600/20">تحليل وتوليد السكربت</button>
+        <!-- صندوق الإدخال -->
+        <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-4">
+            <label class="block text-sm font-medium text-zinc-300">أدخل فكرة السكربت أو الميكانيكا المطلوبة:</label>
+            <textarea id="ideaInput" rows="4" placeholder="مثال: نظام طيران يجعل اللاعب يرتفع للأعلى عند الضغط على زر مع تأثيرات..." class="w-full bg-black border border-zinc-800 p-4 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"></textarea>
+            <button onclick="analyzeAndGenerate()" class="bg-white text-black hover:bg-zinc-200 px-6 py-3 rounded-xl font-bold text-sm transition shadow-sm">تحليل وتوليد السكربت</button>
         </div>
 
-        <div id="resultsArea" class="hidden space-y-4">
-            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 space-y-2">
-                <h3 class="font-semibold text-emerald-400 text-sm">كود Luau (Client & Server)</h3>
-                <pre id="codeOutput" class="bg-slate-950 p-4 rounded text-xs overflow-x-auto text-emerald-300 font-mono leading-relaxed"></pre>
+        <!-- منطقة النتائج -->
+        <div id="resultsArea" class="hidden space-y-6">
+            <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-semibold text-white text-sm">كود Luau (Client & Server)</h3>
+                    <button onclick="copyCode()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3 py-1.5 rounded-lg transition text-zinc-300">نسخ الكود</button>
+                </div>
+                <pre id="codeOutput" class="bg-black border border-zinc-900 p-4 rounded-xl text-xs overflow-x-auto text-zinc-200 font-mono leading-relaxed"></pre>
             </div>
 
-            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 space-y-2">
-                <h3 class="font-semibold text-amber-400 text-sm">متطلبات الـ Remote Events</h3>
-                <div id="remotesOutput" class="text-sm text-slate-300 bg-slate-950 p-3 rounded font-mono"></div>
+            <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-3">
+                <h3 class="font-semibold text-white text-sm">متطلبات الـ Remote Events والأماكن</h3>
+                <div id="remotesOutput" class="text-sm text-zinc-300 bg-black border border-zinc-900 p-4 rounded-xl font-mono leading-relaxed"></div>
             </div>
         </div>
     </div>
@@ -37,12 +43,11 @@
             const idea = document.getElementById('ideaInput').value;
             if (!idea) return alert('الرجاء كتابة الفكرة أولاً!');
 
-            // محاكاة تحليل الذكاء الاصطناعي للفكرة وإنتاج السكربت المناسب
             const luaScript = `-- فكرة المشروع: ${idea}
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
--- إنشاء أو جلب الـ RemoteEvent اللازم للتواصل
+-- إعداد مجلد الـ Remotes تلقائياً
 local remoteFolder = ReplicatedStorage:FindFirstChild("GameRemotes") or Instance.new("Folder", ReplicatedStorage)
 remoteFolder.Name = "GameRemotes"
 
@@ -50,15 +55,21 @@ local actionRemote = remoteFolder:FindFirstChild("ExecuteActionEvent") or Instan
 actionRemote.Name = "ExecuteActionEvent"
 
 actionRemote.OnServerEvent:Connect(function(player, actionData)
-    print("تم استلام الطلب من اللاعب: " .. player.Name)
-    -- ضع منطق التنفيذ الخاص بالفكرة هنا
+    print("تم تنفيذ الطلب بنجاح بواسطة: " .. player.Name)
+    -- ضع منطق اللعبة هنا
 end)`;
 
-            const remotesInfo = `• نوع الـ Remote: RemoteEvent\n• اسم المجلد: GameRemotes (داخل ReplicatedStorage)\n• اسم الـ Event: ExecuteActionEvent`;
+            const remotesInfo = `• نوع الـ Remote: RemoteEvent<br>• مكان الـ Folder: ReplicatedStorage<br>• اسم الـ Event: ExecuteActionEvent<br>• إرشادات الاستخدام: ضع هذا الكود في ServerScriptService للتحكم بالخادم.`;
 
             document.getElementById('codeOutput').textContent = luaScript;
-            document.getElementById('remotesOutput').textContent = remotesInfo;
+            document.getElementById('remotesOutput').innerHTML = remotesInfo;
             document.getElementById('resultsArea').classList.remove('hidden');
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById('codeOutput').textContent;
+            navigator.clipboard.writeText(codeText);
+            alert('تم نسخ الكود بنجاح!');
         }
     </script>
 </body>
