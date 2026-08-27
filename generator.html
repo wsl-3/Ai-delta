@@ -8,22 +8,35 @@
 </head>
 <body class="bg-black text-white min-h-screen p-6 selection:bg-white selection:text-black">
     <div class="max-w-4xl mx-auto space-y-8">
-        <!-- الهيدر -->
+        <!-- الهيدر مع زر البيت -->
         <header class="flex justify-between items-center border-b border-zinc-800 pb-4">
-            <h1 class="text-xl font-bold tracking-wide">محلل أفكار Roblox AI</h1>
-            <a href="index.html" class="text-sm text-zinc-400 hover:text-white transition">العودة للرئيسية</a>
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 p-2 rounded-xl text-zinc-300 transition" title="الرئيسية">
+                    🏠
+                </a>
+                <h1 class="text-xl font-bold tracking-wide">محلل أفكار Roblox AI</h1>
+            </div>
+            <a href="saved.html" class="text-sm text-zinc-400 hover:text-white transition">المحفوظات 📂</a>
         </header>
 
-        <!-- صندوق الإدخال مع زر الاقتراحات العشوائية -->
+        <!-- صندوق الإدخال والاقتراحات -->
         <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-4">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-wrap justify-between items-center gap-2">
                 <label class="block text-sm font-medium text-zinc-300">أدخل فكرة السكربت أو الميكانيكا المطلوبة:</label>
-                <button onclick="generateRandomIdea()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                    ✨ اقتراح فكرة عشوائية ذكية
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="generateRandomIdea()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                        ✨ فكرة عشوائية
+                    </button>
+                    <button id="backBtn" onclick="restorePreviousIdea()" class="hidden text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-amber-400 px-3 py-1.5 rounded-lg transition">
+                        ↩️ رجوع للفكرة السابقة
+                    </button>
+                </div>
             </div>
             <textarea id="ideaInput" rows="4" placeholder="مثال: نظام طيران يجعل اللاعب يرتفع للأعلى عند الضغط على زر مع تأثيرات..." class="w-full bg-black border border-zinc-800 p-4 rounded-xl text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"></textarea>
-            <button onclick="analyzeAndGenerate()" class="bg-white text-black hover:bg-zinc-200 px-6 py-3 rounded-xl font-bold text-sm transition shadow-sm">تحليل وتوليد السكربت</button>
+            
+            <div class="flex gap-3">
+                <button onclick="analyzeAndGenerate()" class="bg-white text-black hover:bg-zinc-200 px-6 py-3 rounded-xl font-bold text-sm transition shadow-sm flex-1">تحليل وتوليد السكربت</button>
+            </div>
         </div>
 
         <!-- منطقة النتائج -->
@@ -31,7 +44,10 @@
             <div class="bg-zinc-950 border border-zinc-800 p-6 rounded-2xl space-y-3">
                 <div class="flex justify-between items-center">
                     <h3 class="font-semibold text-white text-sm">كود Luau (Client & Server)</h3>
-                    <button onclick="copyCode()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3 py-1.5 rounded-lg transition text-zinc-300">نسخ الكود</button>
+                    <div class="flex gap-2">
+                        <button onclick="saveCurrentScript()" class="text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 hover:bg-emerald-900 px-3 py-1.5 rounded-lg transition">💾 حفظ السكربت</button>
+                        <button onclick="copyCode()" class="text-xs bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 px-3 py-1.5 rounded-lg transition text-zinc-300">نسخ الكود</button>
+                    </div>
                 </div>
                 <pre id="codeOutput" class="bg-black border border-zinc-900 p-4 rounded-xl text-xs overflow-x-auto text-zinc-200 font-mono leading-relaxed"></pre>
             </div>
@@ -44,6 +60,8 @@
     </div>
 
     <script>
+        let previousState = null;
+
         const randomIdeas = [
             {
                 idea: "نظام لوحة متصدرين (Leaderboard) يحدث نقاط اللاعبين تلقائياً عند جمع العملات.",
@@ -59,24 +77,44 @@
                 idea: "نظام متجر أسلحة يخصم العملات ويمنح الأداة للاعب عند الشراء.",
                 code: `-- نظام شراء الأسلحة من المتجر\nlocal ReplicatedStorage = game:GetService("ReplicatedStorage")\nlocal remotes = ReplicatedStorage:WaitForChild("GameRemotes")\nlocal buyRemote = remotes:WaitForChild("BuyItemEvent")\n\nbuyRemote.OnServerEvent:Connect(function(player, itemName)\n    local leaderstats = player:FindFirstChild("leaderstats")\n    local coins = leaderstats and leaderstats:FindFirstChild("Coins")\n    \n    if coins and coins.Value >= 100 then\n        coins.Value = coins.Value - 100\n        print(player.Name .. " اشترى بنجاح: " .. itemName)\n    end\nend)`,
                 remotes: "• نوع الـ Remote: RemoteEvent\n• المكان: ReplicatedStorage/GameRemotes\n• الاسم: BuyItemEvent"
-            },
-            {
-                idea: "نظام حلبة صغرى (Treadmill) تزيد سرعة اللاعب تدريجياً كلما وقف عليها.",
-                code: `-- نظام جهاز الجري (Treadmill Speed System)\nlocal part = script.Parent\n\npart.Touched:Connect(function(hit)\n    local character = hit.Parent\n    local humanoid = character:FindFirstChildOfClass("Humanoid")\n    if humanoid then\n        humanoid.WalkSpeed = humanoid.WalkSpeed + 0.5\n        print("تمت زيادة سرعة اللاعب: " .. character.Name)\n    end\nend)`,
-                remotes: "• لا يحتاج لـ Remote، يعمل بالكامل عبر Touched Event في السيرفر."
             }
         ];
 
         function generateRandomIdea() {
+            // حفظ الحالة الحالية قبل التغيير لتمكين زر الرجوع
+            previousState = {
+                idea: document.getElementById('ideaInput').value,
+                code: document.getElementById('codeOutput').textContent,
+                remotes: document.getElementById('remotesOutput').innerHTML,
+                visible: !document.getElementById('resultsArea').classList.contains('hidden')
+            };
+
             const randomIndex = Math.floor(Math.random() * randomIdeas.length);
             const selected = randomIdeas[randomIndex];
 
             document.getElementById('ideaInput').value = selected.idea;
-
-            // تعبئة النتائج مباشرة لإعطاء شعور فوري بالذكاء الاصطناعي
             document.getElementById('codeOutput').textContent = selected.code;
             document.getElementById('remotesOutput').innerHTML = selected.remotes;
             document.getElementById('resultsArea').classList.remove('hidden');
+            
+            // إظهار زر الرجوع
+            document.getElementById('backBtn').classList.remove('hidden');
+        }
+
+        function restorePreviousIdea() {
+            if (!previousState) return;
+            document.getElementById('ideaInput').value = previousState.idea;
+            document.getElementById('codeOutput').textContent = previousState.code;
+            document.getElementById('remotesOutput').innerHTML = previousState.remotes;
+            
+            if (previousState.visible) {
+                document.getElementById('resultsArea').classList.remove('hidden');
+            } else {
+                document.getElementById('resultsArea').classList.add('hidden');
+            }
+
+            document.getElementById('backBtn').classList.add('hidden');
+            previousState = null;
         }
 
         function analyzeAndGenerate() {
@@ -90,6 +128,20 @@
             document.getElementById('codeOutput').textContent = luaScript;
             document.getElementById('remotesOutput').innerHTML = remotesInfo;
             document.getElementById('resultsArea').classList.remove('hidden');
+        }
+
+        function saveCurrentScript() {
+            const idea = document.getElementById('ideaInput').value;
+            const code = document.getElementById('codeOutput').textContent;
+            const remotes = document.getElementById('remotesOutput').innerHTML;
+
+            if (!code) return alert('لا يوجد سكربت لحفظه!');
+
+            const savedScripts = JSON.parse(localStorage.getItem('robloxSavedScripts') || '[]');
+            savedScripts.unshift({ idea, code, remotes, date: new Date().toLocaleDateString('ar-AE') });
+            localStorage.setItem('robloxSavedScripts', JSON.stringify(savedScripts));
+
+            alert('تم حفظ السكربت بنجاح في السكربتات المحفوظة! 📂');
         }
 
         function copyCode() {
